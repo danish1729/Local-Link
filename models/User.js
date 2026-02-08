@@ -1,17 +1,34 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, models } from "mongoose";
 
-const UserSchema = new mongoose.Schema(
+const UserSchema = new Schema(
   {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    name: String,
+    email: String,
+    password: String,
     role: {
       type: String,
       enum: ["customer", "provider", "admin"],
       required: true,
     },
+    profileImage: {
+      type: String, // Cloudinary URL
+      default: null,
+    },
+    serviceType: String,
+    hourlyRate: Number,
+    bio: String,
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: [Number], // [lng, lat]
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export default mongoose.models.User || mongoose.model("User", UserSchema);
+UserSchema.index({ location: "2dsphere" });
+
+export default models.User || mongoose.model("User", UserSchema);

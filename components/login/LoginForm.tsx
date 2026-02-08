@@ -125,9 +125,8 @@ export default function LoginForm() {
       }
 
       // 🔁 Role-based redirect with animation
-      if (data.role === "customer") router.push("/");
-      if (data.role === "provider") router.push("/provider/dashboard");
-      if (data.role === "admin") router.push("/admin/dashboard");
+      router.push(`/dashboard?role=${data.role}`);
+
     } catch (error) {
       setErrors({
         general: "Something went wrong. Please try again.",
