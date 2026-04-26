@@ -1,41 +1,57 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import jwt from "jsonwebtoken";
+import { jwtVerify } from "jose"; // ⚡️ Use 'jose', not 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
+// Encode the secret for the Edge Runtime
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
-export function middleware(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
+export async function middleware(req: NextRequest) {
+  // 🔍 FIX 1: Look for "auth_token" (matches your Login API), not "token"
+  const token = req.cookies.get("auth_token")?.value;
 
+  const loginUrl = new URL("/login", req.url);
+
+  // If no token exists, kick them back to login
   if (!token) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(loginUrl);
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as {
-      role: string;
-    };
+    // 🔍 FIX 2: Use jwtVerify from 'jose' for Edge compatibility
+    const { payload } = await jwtVerify(token, JWT_SECRET);
 
+    // Extract role from the verified token
+    const role = payload.role as string;
     const pathname = req.nextUrl.pathname;
 
-    if (pathname.startsWith("/admin") && decoded.role !== "admin") {
-      return NextResponse.redirect(new URL("/login", req.url));
+    // --- Role Based Protection ---
+
+    // Protect Admin Routes
+    if (pathname.startsWith("/admin") && role !== "admin") {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
-    if (pathname.startsWith("/provider") && decoded.role !== "provider") {
-      return NextResponse.redirect(new URL("/login", req.url));
+
+    // Protect Customer Routes
+    if (pathname.startsWith("/customer") && role !== "customer") {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
-    if (pathname.startsWith("/customer") && decoded.role !== "customer") {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
-
+    // If everything is fine, let them pass
     return NextResponse.next();
-  } catch {
-    return NextResponse.redirect(new URL("/login", req.url));
+  } catch (error) {
+    // If token is tampered with or expired
+    console.error("Middleware Auth Error:", error);
+    return NextResponse.redirect(loginUrl);
   }
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  // Protect dashboard and role-specific paths
+  matcher: [
+    "/dashboard/:path*",
+    "/admin/:path*",
+    "/provider/:path*",
+    "/customer/:path*",
+  ],
 };

@@ -4,14 +4,31 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { z } from "zod";
-import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2, Zap, Lock as LockIcon, CheckCircle2, Github } from "lucide-react";
-import Input from "../Input";
-import { useLocation } from "@/hooks/useLocation";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  Loader2,
+  Zap,
+  Lock as LockIcon,
+  CheckCircle2,
+  Github,
+} from "lucide-react";
 
-// Zod schema for form validation
+// ✅ Removed unused "Input" import
+// ✅ Removed "useLocation" hook (Login shouldn't depend on GPS)
+
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address").min(1, "Email is required"),
-  password: z.string().min(6, "Password must be at least 6 characters").min(1, "Password is required"),
+  email: z
+    .string()
+    .email("Please enter a valid email address")
+    .min(1, "Email is required"),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .min(1, "Password is required"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -24,7 +41,6 @@ interface FormErrors {
 
 export default function LoginForm() {
   const router = useRouter();
-  const { location } = useLocation();
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -36,24 +52,22 @@ export default function LoginForm() {
     try {
       if (name === "email") {
         loginSchema.pick({ email: true }).parse({ email: value });
-        return undefined;
       } else if (name === "password") {
         loginSchema.pick({ password: true }).parse({ password: value });
-        return undefined;
       }
+      return undefined;
     } catch (error) {
       if (error instanceof z.ZodError) {
         return error.issues[0]?.message;
       }
+      return undefined;
     }
-    return undefined;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Real-time validation
     if (touched[name as keyof typeof touched]) {
       const error = validateField(name, value);
       setErrors((prev) => ({
@@ -67,7 +81,6 @@ export default function LoginForm() {
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const { name } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
-
     const error = validateField(name, formData[name as keyof typeof formData]);
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
@@ -76,16 +89,15 @@ export default function LoginForm() {
     try {
       loginSchema.parse(formData);
       setErrors({});
-      setTouched({ email: true, password: true });
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: FormErrors = {};
         error.issues.forEach((err) => {
-          const path = err.path[0] as string;
-          newErrors[path as keyof FormErrors] = err.message;
+          newErrors[err.path[0] as keyof FormErrors] = err.message;
         });
         setErrors(newErrors);
+        // Mark all as touched so errors show up
         setTouched({ email: true, password: true });
       }
       return false;
@@ -101,6 +113,7 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
+      // ✅ Removed Location Data from Body
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
@@ -109,14 +122,13 @@ export default function LoginForm() {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          latitude: location?.latitude,
-          longitude: location?.longitude,
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
+        // Handle specific 401/400 errors from backend
         setErrors({
           general: data.message || "Invalid email or password",
         });
@@ -124,12 +136,16 @@ export default function LoginForm() {
         return;
       }
 
-      // 🔁 Role-based redirect with animation
-      router.push(`/dashboard?role=${data.role}`);
+      // ✅ FIX: Access the role correctly
+      // The backend returns { message: "...", user: { ... } }
+      // So we must look at data.user.role, not data.role directly
+      const userRole = data.user?.role || "customer"; // fallback just in case
 
+      router.push(`/dashboard?role=${userRole}`);
     } catch (error) {
+      console.error("Login Error", error);
       setErrors({
-        general: "Something went wrong. Please try again.",
+        general: "Network error. Please try again.",
       });
       setLoading(false);
     }
@@ -165,9 +181,9 @@ export default function LoginForm() {
         {/* Header */}
         <motion.div
           variants={itemVariants}
-          className="bg-linear-to-r from-blue-600 to-blue-700 px-8 py-8"
+          className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-8"
         >
-          <h2 className="text-3xl font-bold text-white mb-2">Welcome</h2>
+          <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
           <p className="text-blue-100 text-sm">
             Sign in to your LocalLink account
           </p>
@@ -279,7 +295,7 @@ export default function LoginForm() {
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={loading}
-            className="w-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-slate-400 disabled:to-slate-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-slate-400 disabled:to-slate-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -294,6 +310,7 @@ export default function LoginForm() {
             )}
           </motion.button>
 
+          {/* ... Footer and Social Buttons remain the same ... */}
           {/* Divider */}
           <motion.div variants={itemVariants} className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -313,6 +330,7 @@ export default function LoginForm() {
               type="button"
               className="flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors duration-200"
             >
+              {/* Google SVG */}
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

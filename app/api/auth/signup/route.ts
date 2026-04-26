@@ -1,104 +1,63 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
-import Customer from "@/models/Customer";
-import ServiceProvider from "@/models/ServiceProvider";
-
-interface SignupBody {
-  name: string;
-  email: string;
-  password: string;
-  role: "customer" | "provider" | "admin";
-  address?: string;
-  latitude?: number;
-  longitude?: number;
-  serviceType?: string;
-  hourlyRate?: number;
-}
+import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
     await connectDB();
 
-    const body: SignupBody = await req.json();
-
+    // 1. Destructure the "Flat" data coming from the form
     const {
       name,
       email,
       password,
       role,
-      address,
       latitude,
       longitude,
+      address,
       serviceType,
       hourlyRate,
-    } = body;
+    } = await req.json();
 
-    // 1️⃣ Check if user already exists
+    // 2. Check existing
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return NextResponse.json(
-        { message: "Email already registered" },
-        { status: 400 }
+        { message: "Email already taken" },
+        { status: 400 },
       );
     }
 
-    // 2️⃣ Hash password
+    // 3. Hash Password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3️⃣ Create User
-    const user = await User.create({
+    // 4. 🛑 CONSTRUCT THE GEOJSON OBJECT 🛑
+    // MongoDB requires [Longitude, Latitude] order!
+    const locationData = {
+      type: "Point",
+      coordinates: [parseFloat(longitude), parseFloat(latitude)],
+    };
+
+    // 5. Create User
+    await User.create({
       name,
       email,
       password: hashedPassword,
       role,
+      address, // Now validated by schema
+      location: locationData, // Saved as GeoJSON
+      // Only add these if they exist (cleaner DB)
+      ...(serviceType && { serviceType }),
+      ...(hourlyRate && { hourlyRate }),
     });
 
-    // 4️⃣ Role-based document creation
-    if (role === "customer") {
-      if (!latitude || !longitude) {
-        return NextResponse.json(
-          { message: "Location is required for customer" },
-          { status: 400 }
-        );
-      }
-
-      await Customer.create({
-        userId: user._id,
-        address,
-        location: {
-          type: "Point",
-          coordinates: [longitude, latitude], // lng, lat
-        },
-      });
-    }
-
-    if (role === "provider") {
-      if (!latitude || !longitude || !serviceType) {
-        return NextResponse.json(
-          { message: "Missing provider information" },
-          { status: 400 }
-        );
-      }
-
-      await ServiceProvider.create({
-        userId: user._id,
-        serviceType,
-        hourlyRate,
-        serviceArea: {
-          type: "Point",
-          coordinates: [longitude, latitude],
-        },
-      });
-    }
-
+    return NextResponse.json({ message: "User registered" }, { status: 201 });
+  } catch (error: unknown) {
+    console.error("Signup Error:", error);
     return NextResponse.json(
-      { message: "User registered successfully" },
-      { status: 201 }
+      { message: error instanceof Error ? error.message : "Signup failed" },
+      { status: 500 },
     );
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ message: "Signup failed" }, { status: 500 });
   }
 }

@@ -1,11 +1,32 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
+import ServiceProvider from "@/models/ServiceProvider";
+
+// Define the shape of the data we want to return
+type ProviderCard = {
+  _id: string;
+  name: string;
+  serviceType: string;
+  hourlyRate?: number;
+  profileImage: string | null;
+  rating: number;
+  reviewCount: number;
+};
+
+interface ProviderDoc {
+  _id: { toString: () => string };
+  name: string;
+  serviceType?: string;
+  hourlyRate?: number;
+  profileImage?: string | null;
+}
 
 export async function GET() {
   try {
     await connectDB();
 
+    // 1. Fetch only necessary fields
     const providers = await User.find(
       { role: "provider" },
       {
@@ -13,34 +34,34 @@ export async function GET() {
         serviceType: 1,
         hourlyRate: 1,
         profileImage: 1,
+        // If you had a 'rating' field in DB, fetch it here.
       },
     ).lean();
 
-    // 🔁 Group providers by category
-    type ProviderSummary = {
-      _id: string;
-      name: string;
-      hourlyRate?: number;
-      profileImage: string | null;
-      rating: number;
-    };
-    const grouped: Record<string, ProviderSummary[]> = {};
+    // 2. Group by Service Type
+    const grouped: Record<string, ProviderCard[]> = {};
 
-    providers.forEach((p) => {
-      if (!p.serviceType) return;
+    (providers as unknown as ProviderDoc[]).forEach((user) => {
+      // Skip if no service type is set
+      if (!user.serviceType) return;
 
-      if (!grouped[p.serviceType]) {
-        grouped[p.serviceType] = [];
+      if (!grouped[user.serviceType]) {
+        grouped[user.serviceType] = [];
       }
 
-      grouped[p.serviceType].push({
-        _id: p._id.toString(),
-        name: p.name,
-        hourlyRate: p.hourlyRate,
-        profileImage: p.profileImage || null,
-        rating: 4.8,
+      // Generate a random rating for demo purposes (Remove this when you have real reviews)
+      const demoRating = (Math.random() * (5.0 - 4.0) + 4.0).toFixed(1);
+      const demoCount = Math.floor(Math.random() * 50) + 1;
+
+      grouped[user.serviceType].push({
+        _id: user._id.toString(), // ✅ Convert ObjectId to string
+        name: user.name,
+        serviceType: user.serviceType,
+        hourlyRate: user.hourlyRate || 0,
+        profileImage: user.profileImage || null,
+        rating: parseFloat(demoRating), // Number
+        reviewCount: demoCount,
       });
-      
     });
 
     return NextResponse.json(grouped);
