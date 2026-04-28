@@ -39,9 +39,9 @@ export async function POST(req: Request) {
     // 🚀 3. Initialize Gemini
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // 🔥 FIX: Use 'gemini-1.0-pro' (The most stable, widely available model)
+    // 🔥 FIX: Use 'gemini-2.5-flash' (The recommended model for general text tasks)
     // If this fails, the catch block will trigger the fallback.
-    const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const chat = model.startChat({
       history: [

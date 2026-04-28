@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    const { email, password } = await req.json();
+    const { email, password, latitude, longitude } = await req.json();
 
     // 1. Basic Validation
     if (!email || !password) {
@@ -44,6 +44,25 @@ export async function POST(req: Request) {
         { message: "Invalid credentials" },
         { status: 401 },
       );
+    }
+
+    // Update location if provided
+    if (latitude && longitude) {
+      await User.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            location: {
+              type: "Point",
+              coordinates: [parseFloat(longitude), parseFloat(latitude)],
+            },
+          },
+        }
+      );
+      user.location = {
+        type: "Point",
+        coordinates: [parseFloat(longitude), parseFloat(latitude)],
+      };
     }
 
     // 4. Generate Token

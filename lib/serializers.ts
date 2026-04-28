@@ -43,6 +43,7 @@ interface SerializedProvider {
   email: string;
   phone: string;
   role: string;
+  profileImage: string | null;
   serviceType: string;
   hourlyRate: number;
   bio: string;
@@ -53,6 +54,12 @@ interface SerializedProvider {
   responseTime: string;
   availability: string;
   experience: number;
+  education: any[];
+  workExperience: any[];
+  certificates: any[];
+  averageRating: number;
+  totalReviews: number;
+  reviewsReceived: any[];
   createdAt: string;
   updatedAt: string;
 }
@@ -160,6 +167,7 @@ export function serializeProvider(provider: ProviderDocument): SerializedProvide
     email: provider.email ?? "",
     phone: provider.phone ?? "",
     role: provider.role ?? "provider",
+    profileImage: (provider.profileImage as string) ?? null,
     serviceType: provider.serviceType ?? "",
     hourlyRate: provider.hourlyRate ?? 0,
     bio: provider.bio ?? "",
@@ -172,6 +180,12 @@ export function serializeProvider(provider: ProviderDocument): SerializedProvide
     responseTime: provider.responseTime ?? "Within 1 hour",
     availability: provider.availability ?? "Full-time",
     experience: provider.experience ?? 5,
+    education: Array.isArray(provider.education) ? deepSerialize(provider.education) as any[] : [],
+    workExperience: Array.isArray(provider.workExperience) ? deepSerialize(provider.workExperience) as any[] : [],
+    certificates: Array.isArray(provider.certificates) ? deepSerialize(provider.certificates) as any[] : [],
+    averageRating: provider.averageRating ?? provider.rating ?? 0,
+    totalReviews: provider.totalReviews ?? provider.completedJobs ?? 0,
+    reviewsReceived: Array.isArray(provider.reviewsReceived) ? deepSerialize(provider.reviewsReceived) as any[] : [],
     createdAt: provider.createdAt?.toISOString() ?? new Date().toISOString(),
     updatedAt: provider.updatedAt?.toISOString() ?? new Date().toISOString(),
     // Do NOT include the raw location GeoJSON object

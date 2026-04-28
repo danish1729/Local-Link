@@ -1,170 +1,96 @@
 "use client";
 
-import { motion } from "framer-motion";
-import {
-  Briefcase,
-  Clock,
-  MapPin,
-  FileText,
-  Badge,
-  Zap,
-  Users,
-} from "lucide-react";
-
-type Provider = {
-  bio?: string;
-  serviceType?: string;
-  hourlyRate?: number | string;
-  experience?: number;
-  location?: string;
-  languages?: string[];
-  responseTime?: string;
-  availability?: string;
-};
+import { Briefcase, GraduationCap, MapPin, BadgeCheck, FileText } from "lucide-react";
 
 type ProviderInfoProps = {
-  provider: Provider;
+  provider: any;
 };
 
 export default function ProviderInfo({ provider }: ProviderInfoProps) {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-  };
-
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
-      className="space-y-6"
-    >
+    <div className="space-y-8 bg-white p-8 rounded-xl border border-slate-200">
+      
       {/* About Section */}
-      <motion.div
-        variants={itemVariants}
-        className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 hover:shadow-lg transition"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-blue-100 rounded-lg">
-            <FileText className="w-6 h-6 text-blue-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900">About</h2>
+      <div>
+        <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+          About Me
+        </h2>
+        <div className="prose prose-slate max-w-none text-slate-700 leading-relaxed">
+          {provider.bio ? (
+            <p className="whitespace-pre-wrap">{provider.bio}</p>
+          ) : (
+            <p className="italic text-slate-500">This provider hasn't written a bio yet. Feel free to contact them directly to ask about their expertise.</p>
+          )}
         </div>
+      </div>
 
-        <p className="text-slate-600 text-lg leading-relaxed mb-6">
-          {provider.bio ||
-            "This service provider has not added a bio yet. Contact them to learn more about their services and expertise."}
-        </p>
+      <div className="w-full h-px bg-slate-100 my-6"></div>
 
-        {/* Details Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <Briefcase className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">
-                  Service Type
-                </p>
-                <p className="text-slate-900 font-semibold">
-                  {provider.serviceType || "Not specified"}
-                </p>
+      {/* Experience Section */}
+      <div>
+        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+          <Briefcase className="w-5 h-5 text-slate-400" /> Work Experience
+        </h2>
+        
+        {provider.workExperience && provider.workExperience.length > 0 ? (
+          <div className="space-y-6">
+            {provider.workExperience.map((exp: any, idx: number) => (
+              <div key={idx} className="flex gap-4">
+                <div className="mt-1">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                    <Briefcase className="w-4 h-4" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900">{exp.title}</h3>
+                  <div className="text-slate-600 font-medium text-sm mb-1">{exp.company}</div>
+                  <div className="text-slate-400 text-xs mb-2">
+                    {exp.startDate} – {exp.endDate || "Present"}
+                  </div>
+                  {exp.description && (
+                    <p className="text-slate-700 text-sm leading-relaxed">{exp.description}</p>
+                  )}
+                </div>
               </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <Zap className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">
-                  Hourly Rate
-                </p>
-                <p className="text-slate-900 font-semibold text-lg">
-                  Rs {provider.hourlyRate || "500"}/hour
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">
-                  Response Time
-                </p>
-                <p className="text-slate-900 font-semibold">
-                  {provider.responseTime || "Within 1 hour"}
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
+        ) : (
+          <p className="text-slate-500 italic text-sm">No work experience listed.</p>
+        )}
+      </div>
 
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <Badge className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">
-                  Experience
-                </p>
-                <p className="text-slate-900 font-semibold">
-                  {provider.experience || 5}+ Years
-                </p>
-              </div>
-            </div>
+      <div className="w-full h-px bg-slate-100 my-6"></div>
 
-            <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">
-                  Location
-                </p>
-                <p className="text-slate-900 font-semibold">
-                  {provider.location || "Pakistan"}
-                </p>
+      {/* Education Section */}
+      <div>
+        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+          <GraduationCap className="w-5 h-5 text-slate-400" /> Education
+        </h2>
+        
+        {provider.education && provider.education.length > 0 ? (
+          <div className="space-y-6">
+            {provider.education.map((edu: any, idx: number) => (
+              <div key={idx} className="flex gap-4">
+                <div className="mt-1">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                    <GraduationCap className="w-4 h-4" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900">{edu.institution}</h3>
+                  <div className="text-slate-600 font-medium text-sm mb-1">{edu.degree}</div>
+                  <div className="text-slate-400 text-xs">
+                    Graduated: {edu.yearOfGraduation}
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <Users className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">
-                  Availability
-                </p>
-                <p className="text-slate-900 font-semibold">
-                  {provider.availability || "Full-time"}
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
-        </div>
-      </motion.div>
+        ) : (
+          <p className="text-slate-500 italic text-sm">No education history listed.</p>
+        )}
+      </div>
 
-      {/* Languages Section */}
-      <motion.div
-        variants={itemVariants}
-        className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 hover:shadow-lg transition"
-      >
-        <h3 className="text-lg font-bold text-slate-900 mb-4">Languages</h3>
-        <div className="flex flex-wrap gap-2">
-          {(provider.languages || ["Urdu", "English"]).map((language, idx) => (
-            <span
-              key={idx}
-              className="px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-semibold border border-blue-200"
-            >
-              {language}
-            </span>
-          ))}
-        </div>
-      </motion.div>
-    </motion.div>
+    </div>
   );
 }

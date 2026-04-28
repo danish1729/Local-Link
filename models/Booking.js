@@ -4,11 +4,11 @@ const BookingSchema = new mongoose.Schema(
   {
     customerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Customer",
+      ref: "User",
     },
     providerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "ServiceProvider",
+      ref: "User",
     },
     serviceId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -17,7 +17,14 @@ const BookingSchema = new mongoose.Schema(
     dateTime: Date,
     status: {
       type: String,
-      enum: ["Pending", "Accepted", "Completed"],
+      enum: [
+        "Pending", 
+        "Accepted", 
+        "Completed", 
+        "CancelRequestedByCustomer", 
+        "CancelRequestedByProvider", 
+        "Cancelled"
+      ],
       default: "Pending",
     },
     totalAmount: Number,

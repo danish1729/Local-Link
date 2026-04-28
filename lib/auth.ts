@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
+import { connectDB } from "./db";
+import User from "@/models/User";
 
 // Ensure this matches your .env
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
@@ -19,17 +21,22 @@ export async function getAuthUser() {
     // 3. Verify the token
     const { payload } = await jwtVerify(token, JWT_SECRET);
 
-    console.log(payload.name)
+    // 4. Fetch fresh user data from DB to ensure role/status are never stale
+    await connectDB();
+    const user = await User.findById(payload.userId).lean();
 
-    // 4. Return the user data
+    if (!user) {
+      return null;
+    }
+
+    // 5. Return the fresh user data
     return {
-      _id: payload.userId as string,
-      name: payload.name as string, // Ensure your Login API puts 'name' in the token, or fetch it from DB here
-      email: payload.email as string,
-      role: payload.role as string,
-      // If profileImage isn't in the token, you might want to fetch the full user from DB here
-      // But for the header, basic info is usually enough.
-      // If you need the image and it's not in the token, let me know!
+      _id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      profileImage: user.profileImage || null,
+      providerStatus: user.providerStatus || "none"
     };
   } catch (error) {
     // If token is invalid or expired, return null

@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
-import ProviderHeader from "@/components/providers/ProvidersHeader";
+import ProviderProfileCard from "@/components/providers/ProviderProfileCard";
 import ProviderInfo from "@/components/providers/ProviderInfo";
 import ProviderStats from "@/components/providers/ProviderStats";
-import ProviderActions from "@/components/providers/ProviderActions";
 import ProviderReviews from "@/components/providers/ProviderReviews";
 import ProviderGallery from "@/components/providers/ProvidersGallery";
+import ProviderCertificates from "@/components/providers/ProviderCertificates";
 import { Types } from "mongoose";
 import Header from "@/components/layout/Header";
 import { serializeProvider } from "@/lib/serializers";
@@ -38,25 +38,31 @@ export default async function ProviderProfilePage({ params }: Props) {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">
-        {/* Hero Section */}
-        <ProviderHeader provider={provider} />
+      <main className="min-h-screen bg-slate-50 pt-8 pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Sidebar - Profile Card (Sticky) */}
+            <div className="lg:col-span-4">
+              <ProviderProfileCard provider={provider} />
+            </div>
 
-        {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left Column - Main Info */}
-            <div className="lg:col-span-2 space-y-8">
+            {/* Right Column - Main Content */}
+            <div className="lg:col-span-8 space-y-6">
               <ProviderInfo provider={provider} />
+              
+              <ProviderStats provider={provider} />
+              
+              <ProviderCertificates certificates={provider.certificates} />
               <ProviderGallery providerId={provider._id} />
-              <ProviderReviews providerId={provider._id} />
+              <ProviderReviews 
+                providerId={provider._id} 
+                initialReviews={provider.reviewsReceived}
+                averageRating={provider.averageRating}
+                totalReviews={provider.totalReviews}
+              />
             </div>
 
-            {/* Right Sidebar - Actions & Stats */}
-            <div className="space-y-6">
-              <ProviderActions providerId={provider._id} />
-              <ProviderStats providerId={provider._id} />
-            </div>
           </div>
         </div>
       </main>
