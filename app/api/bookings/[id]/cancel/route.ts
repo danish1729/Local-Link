@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/db";
 import Booking from "@/models/Booking";
 import { getAuthUser } from "@/lib/auth";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB();
     const authUser = await getAuthUser();
@@ -13,7 +13,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     }
 
     const { action } = await req.json(); // action can be "request_cancel" or "approve_cancel"
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
 
     const booking = await Booking.findById(bookingId);
 

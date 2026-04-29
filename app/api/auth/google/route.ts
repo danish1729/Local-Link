@@ -41,12 +41,7 @@ export async function POST(req: Request) {
       // Create new user (Signup flow via Google)
       // Since everyone starts as customer, we set it explicitly
       
-      const locationData = latitude && longitude ? {
-        type: "Point",
-        coordinates: [parseFloat(longitude), parseFloat(latitude)],
-      } : undefined;
-
-      user = await User.create({
+      const newUserData: any = {
         name: name || "Google User",
         email: email,
         googleId,
@@ -54,8 +49,16 @@ export async function POST(req: Request) {
         providerStatus: "none",
         profileImage: picture,
         address: address || "Not provided",
-        location: locationData
-      });
+      };
+
+      if (latitude && longitude) {
+        newUserData.location = {
+          type: "Point",
+          coordinates: [parseFloat(longitude), parseFloat(latitude)],
+        };
+      }
+
+      user = await User.create(newUserData);
     } else {
       // If user exists, we can link the googleId and update location
       const updateData: any = {};

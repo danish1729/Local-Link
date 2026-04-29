@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
-import { Types, FilterQuery } from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 interface IUser {
   _id: Types.ObjectId;
@@ -32,7 +32,7 @@ export async function GET(req: Request) {
     }
 
     // 1. Build the Geospatial Query
-    const dbQuery: FilterQuery<IUser> = {
+    const dbQuery: any = {
       role: "provider",
       location: {
         $near: {

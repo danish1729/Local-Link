@@ -38,13 +38,6 @@ export default async function Header() {
               >
                 How It Works
               </Link>
-              {user?.providerStatus != 'approved' && <Link
-                href="/become-seller"
-                className="px-4 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
-              >
-                Become a Seller
-              </Link>
-              }
               
             </nav>
 

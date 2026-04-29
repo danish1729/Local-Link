@@ -34,9 +34,7 @@ type MapProps = {
 export default function Map({ center, providers }: MapProps) {
   return (
     <MapContainer
-      center={center}
-      zoom={13}
-      scrollWheelZoom={false}
+      {...({ center: center, zoom: 13, scrollWheelZoom: false } as any)}
       className="w-full h-full rounded-xl z-0"
     >
       <TileLayer

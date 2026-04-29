@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -42,7 +42,7 @@ interface FormErrors {
   general?: string;
 }
 
-export default function ProfilePage() {
+function ProfileContent() {
   const searchParams = useSearchParams();
   const role = searchParams.get("role") || "customer";
 
@@ -607,5 +607,17 @@ export default function ProfilePage() {
         </motion.div>
       </motion.div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    }>
+      <ProfileContent />
+    </Suspense>
   );
 }

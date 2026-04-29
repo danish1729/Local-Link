@@ -78,7 +78,7 @@ export default function ProviderProfileCard({ provider }: ProviderProfileCardPro
 
         {/* Action Buttons */}
         <div className="space-y-3 mb-6">
-          <Link href={`/booking/new?providerId=${provider._id}`} className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-lg font-bold transition">
+          <Link href={`/book/${provider._id}`} className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-lg font-bold transition">
             <Zap className="w-4 h-4" />
             Book Now
           </Link>

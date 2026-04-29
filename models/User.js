@@ -56,13 +56,32 @@ const UserSchema = new Schema(
       type: {
         type: String,
         enum: ["Point"],
-        default: "Point",
+        required: false
       },
       coordinates: {
         type: [Number], // [longitude, latitude]
         index: "2dsphere", // Define index here for safety
+        required: false
       },
     },
+
+    // ✅ Availability
+    availability: {
+      type: [
+        {
+          dayOfWeek: { type: Number, min: 0, max: 6 }, // 0 = Sunday, 6 = Saturday
+          startTime: { type: String }, // e.g., "09:00"
+          endTime: { type: String }, // e.g., "17:00"
+          isAvailable: { type: Boolean, default: true }
+        }
+      ],
+      default: []
+    },
+    unavailableDates: [{ type: Date }],
+
+    // Stripe and verification
+    isVerified: { type: Boolean, default: false },
+    stripeAccountId: String,
     
     // ✅ Reviews
     averageRating: { type: Number, default: 0 },
