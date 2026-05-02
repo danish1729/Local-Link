@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { GoogleLogin } from '@react-oauth/google';
@@ -34,6 +34,8 @@ interface FormErrors {
 
 export default function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
   const {
     location,
     loading: locationLoading,
@@ -138,7 +140,11 @@ export default function SignupForm() {
       }
 
       // Success!
-      router.push("/login");
+      if (returnUrl) {
+        router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+      } else {
+        router.push("/login");
+      }
     } catch (error) {
       setErrors({
         general: error instanceof Error ? error.message : "An error occurred",
@@ -166,7 +172,11 @@ export default function SignupForm() {
       if (!res.ok) throw new Error(data.message || "Google signup failed");
 
       const userRole = data.user?.role || "customer";
-      router.push(`/dashboard?role=${userRole}`);
+      if (returnUrl) {
+        router.push(returnUrl);
+      } else {
+        router.push(`/dashboard?role=${userRole}`);
+      }
     } catch (error) {
       setErrors({
         general: error instanceof Error ? error.message : "Google signup failed",
@@ -382,7 +392,7 @@ export default function SignupForm() {
             className="text-center text-sm text-slate-600 mt-6"
           >
             Already have an account?{" "}
-            <a href="/login" className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+            <a href={`/login${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`} className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
               Login
             </a>
           </motion.p>

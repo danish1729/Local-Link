@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import SignupForm from "../../components/signup/SignupForm";
 import { MapPin, Shield, Zap } from "lucide-react";
 
@@ -83,7 +84,9 @@ export default function SignupPage() {
 
         {/* Right form section */}
         <section className="flex items-center justify-center">
-          <SignupForm />
+          <Suspense fallback={<div className="text-white text-center">Loading signup form...</div>}>
+            <SignupForm />
+          </Suspense>
         </section>
       </div>
     </main>

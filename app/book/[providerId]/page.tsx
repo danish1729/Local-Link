@@ -83,9 +83,16 @@ export default function BookProviderPage() {
         const availRes = await fetch(`/api/providers/${providerId}/availability`);
         if (availRes.ok) {
           const availData = await availRes.json();
-          setAvailability(availData.availability);
-          setUnavailableDates(availData.unavailableDates);
-          setExistingBookings(availData.bookings);
+          const defaultAvailability = [0, 1, 2, 3, 4, 5, 6].map(day => ({
+             dayOfWeek: day,
+             startTime: "09:00",
+             endTime: "18:00",
+             isAvailable: true // Default: available every day 9-6
+          }));
+          
+          setAvailability(availData.availability && availData.availability.length > 0 ? availData.availability : defaultAvailability);
+          setUnavailableDates(availData.unavailableDates || []);
+          setExistingBookings(availData.bookings || []);
         }
       } catch (err) {
         console.error("Error fetching booking data", err);
@@ -164,7 +171,10 @@ export default function BookProviderPage() {
     try {
       // Get current customer session. (Assuming API knows or we pass a mock ID for now)
       // In a real app we fetch session. For now let's hit a local route that gets session from token
-      const sessionRes = await fetch("/api/auth/me"); // Assuming you have an auth endpoint
+      const sessionRes = await fetch("/api/auth/me", { 
+        credentials: "include",
+        cache: "no-store"
+      }); // Assuming you have an auth endpoint
       const sessionData = await sessionRes.json();
       const customerId = sessionData?.user?._id;
 
@@ -235,7 +245,7 @@ export default function BookProviderPage() {
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Book {provider?.name || "Provider"}</h1>
             <p className="text-blue-600 font-medium">{provider?.serviceType || "Professional Service"}</p>
-            <p className="text-slate-500 mt-1">${provider?.hourlyRate}/hour</p>
+            <p className="text-slate-500 mt-1">Rs. {provider?.hourlyRate}/hour</p>
           </div>
         </div>
 
@@ -456,11 +466,11 @@ export default function BookProviderPage() {
                     </div>
                     <div className="flex justify-between text-sm mb-4">
                       <span className="text-slate-600">Rate</span>
-                      <span className="font-medium text-slate-900">${provider?.hourlyRate}/hr</span>
+                      <span className="font-medium text-slate-900">Rs. {provider?.hourlyRate}/hr</span>
                     </div>
                     <div className="pt-4 border-t border-blue-200 flex justify-between">
                       <span className="font-bold text-slate-900">Total</span>
-                      <span className="font-bold text-blue-600 text-xl">${(provider?.hourlyRate || 0) * hours}</span>
+                      <span className="font-bold text-blue-600 text-xl">Rs. {(provider?.hourlyRate || 0) * hours}</span>
                     </div>
                   </div>
 

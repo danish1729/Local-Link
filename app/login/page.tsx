@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import LoginForm from "../../components/login/LoginForm";
 import { Lock, MapPin, CheckCircle, MapPinned } from "lucide-react";
 
@@ -76,7 +77,9 @@ export default function LoginPage() {
 
         {/* Right form section */}
         <section className="flex items-center justify-center">
-          <LoginForm />
+          <Suspense fallback={<div className="text-white text-center">Loading login form...</div>}>
+            <LoginForm />
+          </Suspense>
         </section>
       </div>
     </main>

@@ -101,7 +101,7 @@ export default function DashboardClient() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <MetricCard 
             title="Earnings in November" 
-            value={`$${metrics.totalEarnings.toLocaleString()}`} 
+            value={`Rs. ${metrics.totalEarnings.toLocaleString()}`} 
             icon={<DollarSign className="w-5 h-5 text-green-600" />} 
             trend="+12%" 
             bg="bg-green-50"
@@ -164,7 +164,7 @@ export default function DashboardClient() {
                       </div>
 
                       <div className="text-center sm:text-right">
-                        <p className="font-bold text-slate-900">${booking.totalAmount}</p>
+                        <p className="font-bold text-slate-900">Rs. {booking.totalAmount}</p>
                         <StatusBadge status={booking.status} />
                       </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { GoogleLogin } from '@react-oauth/google';
@@ -40,6 +40,8 @@ interface FormErrors {
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -136,7 +138,11 @@ export default function LoginForm() {
       }
 
       const userRole = data.user?.role || "customer";
-      router.push(`/dashboard?role=${userRole}`);
+      if (returnUrl) {
+        router.push(returnUrl);
+      } else {
+        router.push(`/dashboard?role=${userRole}`);
+      }
     } catch (error) {
       console.error("Login Error", error);
       setErrors({
@@ -163,7 +169,11 @@ export default function LoginForm() {
       if (!res.ok) throw new Error(data.message || "Google login failed");
 
       const userRole = data.user?.role || "customer";
-      router.push(`/dashboard?role=${userRole}`);
+      if (returnUrl) {
+        router.push(returnUrl);
+      } else {
+        router.push(`/dashboard?role=${userRole}`);
+      }
     } catch (error) {
       setErrors({
         general: error instanceof Error ? error.message : "Google login failed",
@@ -369,7 +379,7 @@ export default function LoginForm() {
           <p className="text-sm text-center text-slate-600">
             Don&apos;t have an account?{" "}
             <a
-              href="/signup"
+              href={`/signup${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`}
               className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
             >
               Create one free

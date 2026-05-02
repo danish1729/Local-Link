@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+@layer base {
+  button, input, select, textarea, a {
+    cursor: pointer !important;
+  }
+}
+
+/* Target card-like containers based on common utility classes used in the app */
+.shadow-sm.border, .shadow-md.rounded-xl, .shadow-xl.rounded-2xl {
+  cursor: pointer;
+}

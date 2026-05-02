@@ -16,7 +16,7 @@ const UserSchema = new Schema(
     // Seller Approval Status
     providerStatus: {
       type: String,
-      enum: ["none", "pending", "approved", "rejected"],
+      enum: ["none", "pending", "approved", "rejected", "frozen"],
       default: "none",
     },
     // ✅ Added Address so it saves to DB
