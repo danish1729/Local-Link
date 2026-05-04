@@ -70,6 +70,11 @@ export async function POST(req: Request) {
     // Trigger Pusher
     await pusherServer.trigger(`private-conversation-${conversationId}`, "new-message", populatedMessage);
 
+    // AI Fraud detection for chat messages
+    import("@/lib/ai-fraud").then(({ analyzeMessageForFraud }) => {
+      analyzeMessageForFraud(newMessage).catch(console.error);
+    });
+
     return NextResponse.json(populatedMessage);
   } catch (error) {
     console.error("Messages POST Error:", error);

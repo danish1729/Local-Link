@@ -82,6 +82,11 @@ export async function POST(req: Request) {
         status: "Accepted" // Since provider sent it and customer accepted
       });
 
+      // Proactively scan for fraud using AI
+      import("@/lib/ai-fraud").then(({ analyzeBookingForFraud }) => {
+        analyzeBookingForFraud(booking).catch(console.error);
+      });
+
       // Send a system message in chat
       const systemMessage = await Message.create({
         conversationId: message.conversationId,

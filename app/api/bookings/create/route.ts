@@ -51,6 +51,11 @@ export async function POST(req: Request) {
       paymentStatus: "Pending",
     });
 
+    // Proactively scan for fraud using AI
+    import("@/lib/ai-fraud").then(({ analyzeBookingForFraud }) => {
+      analyzeBookingForFraud(booking).catch(console.error);
+    });
+
     return NextResponse.json(
       { message: "Booking created successfully", booking },
       { status: 201 }

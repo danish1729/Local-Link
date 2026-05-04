@@ -26,8 +26,8 @@ export async function GET(req: Request) {
     await connectDB();
 
     const conversations = await Conversation.find({ participants: userId })
-      .populate("participants", "name profileImage role")
-      .populate("lastMessage")
+      .populate({ path: "participants", select: "name profileImage role", model: User })
+      .populate({ path: "lastMessage", model: Message })
       .sort({ updatedAt: -1 })
       .lean();
 

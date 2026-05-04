@@ -8,7 +8,8 @@ import {
   CalendarCheck, 
   AlertTriangle, 
   LogOut,
-  Server
+  Server,
+  ShieldAlert
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -17,6 +18,7 @@ const navItems = [
   { name: "Providers & Approvals", href: "/admin-panel/providers", icon: Users },
   { name: "Bookings", href: "/admin-panel/bookings", icon: CalendarCheck },
   { name: "Disputes", href: "/admin-panel/disputes", icon: AlertTriangle },
+  { name: "Fraud & Security", href: "/admin-panel/fraud", icon: ShieldAlert },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

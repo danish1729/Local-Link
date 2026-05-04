@@ -9,7 +9,7 @@ const UserSchema = new Schema(
     googleId: { type: String, sparse: true, unique: true }, // For Google Auth users
     role: {
       type: String,
-      enum: ["customer", "provider", "admin"],
+      enum: ["customer", "provider", "admin", "suspended"],
       required: true,
       default: "customer"
     },
