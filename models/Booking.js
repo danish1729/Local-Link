@@ -32,6 +32,8 @@ const BookingSchema = new mongoose.Schema(
       enum: [
         "Pending", 
         "Confirmed", 
+        "Accepted",
+        "Rejected",
         "InProgress",
         "Completed", 
         "CancelRequestedByCustomer", 
@@ -42,6 +44,8 @@ const BookingSchema = new mongoose.Schema(
       ],
       default: "Pending",
     },
+    
+    cancelReason: { type: String },
     
     // Financials
     totalAmount: { type: Number, required: true },

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Star, MapPin, Clock, Globe, Zap, Send, ShieldCheck, Mail } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
+import MessageButton from "../chat/MessageButton";
 
 type ProviderProfileCardProps = {
   provider: any;
@@ -82,34 +83,13 @@ export default function ProviderProfileCard({ provider }: ProviderProfileCardPro
             <Zap className="w-4 h-4" />
             Book Now
           </Link>
-          <button onClick={() => setShowContact(!showContact)} className="w-full flex items-center justify-center gap-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 py-3 rounded-lg font-bold transition">
-            <Mail className="w-4 h-4" />
-            Contact Me
-          </button>
+          <MessageButton 
+            userId={provider._id} 
+            label="Contact Me" 
+            variant="outline"
+            className="w-full py-3"
+          />
         </div>
-
-        {/* Contact Form Collapse */}
-        <AnimatePresence>
-          {showContact && (
-            <motion.form 
-              initial={{ opacity: 0, height: 0 }} 
-              animate={{ opacity: 1, height: "auto" }} 
-              exit={{ opacity: 0, height: 0 }}
-              onSubmit={handleContact}
-              className="mb-6 overflow-hidden"
-            >
-              <textarea 
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                placeholder="Hi, I'd like to ask about your services..."
-                className="w-full text-sm border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none h-24 mb-2 bg-slate-50"
-              />
-              <button disabled={isSending || !message.trim()} className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 rounded-lg text-sm disabled:opacity-50 transition flex items-center justify-center gap-2">
-                {isSending ? "Sending..." : <><Send className="w-3 h-3" /> Send Message</>}
-              </button>
-            </motion.form>
-          )}
-        </AnimatePresence>
 
         {/* Divider */}
         <div className="w-full h-px bg-slate-200 mb-6"></div>

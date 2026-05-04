@@ -72,6 +72,7 @@ export default function AdminOverview() {
                   <th className="px-6 py-4">Booking ID</th>
                   <th className="px-6 py-4">Customer</th>
                   <th className="px-6 py-4">Provider</th>
+                  <th className="px-6 py-4">Schedule</th>
                   <th className="px-6 py-4">Amount</th>
                   <th className="px-6 py-4">Status</th>
                 </tr>
@@ -82,12 +83,20 @@ export default function AdminOverview() {
                     <td className="px-6 py-4 font-medium text-slate-900">{b.bookingNumber}</td>
                     <td className="px-6 py-4 text-slate-600">{b.customerId?.name || "Unknown"}</td>
                     <td className="px-6 py-4 text-slate-600">{b.providerId?.name || "Unknown"}</td>
+                    <td className="px-6 py-4">
+                      <div className="text-slate-800 font-medium">
+                        {b.bookingDate ? format(new Date(b.bookingDate), "MMM d, yyyy") : "N/A"}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {b.startTime} - {b.endTime}
+                      </div>
+                    </td>
                     <td className="px-6 py-4 font-bold text-slate-800">Rs. {b.totalAmount}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                         b.status === "Pending" ? "bg-amber-100 text-amber-700" :
-                        b.status === "Confirmed" ? "bg-emerald-100 text-emerald-700" :
-                        b.status.includes("Cancel") ? "bg-red-100 text-red-700" :
+                        b.status === "Confirmed" || b.status === "Accepted" ? "bg-emerald-100 text-emerald-700" :
+                        b.status.includes("Cancel") || b.status === "Rejected" ? "bg-red-100 text-red-700" :
                         "bg-slate-100 text-slate-700"
                       }`}>
                         {b.status}

@@ -10,7 +10,7 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const status = url.searchParams.get("status") || "all";
 
-    const query: any = { role: "provider" };
+    const query: any = { providerStatus: { $in: ["pending", "approved", "rejected", "frozen"] } };
     if (status !== "all") {
       query.providerStatus = status;
     }

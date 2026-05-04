@@ -6,15 +6,20 @@ export async function PATCH(req: Request) {
   try {
     await connectDB();
 
-    const { bookingId, status } = await req.json();
+    const { bookingId, status, reason } = await req.json();
 
     if (!["Accepted", "Rejected", "Completed"].includes(status)) {
       return NextResponse.json({ message: "Invalid status" }, { status: 400 });
     }
 
+    const updateData: any = { status };
+    if (reason && status === "Rejected") {
+      updateData.cancelReason = reason;
+    }
+
     const booking = await Booking.findByIdAndUpdate(
       bookingId,
-      { status },
+      updateData,
       { new: true }
     );
 

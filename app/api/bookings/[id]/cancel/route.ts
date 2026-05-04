@@ -12,7 +12,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { action } = await req.json(); // action can be "request_cancel" or "approve_cancel"
+    const { action, reason } = await req.json(); // action can be "request_cancel" or "approve_cancel"
     const { id: bookingId } = await params;
 
     const booking = await Booking.findById(bookingId);
@@ -34,6 +34,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       }
 
       booking.status = isCustomer ? "CancelRequestedByCustomer" : "CancelRequestedByProvider";
+      if (reason) booking.cancelReason = reason;
       await booking.save();
       return NextResponse.json({ message: "Cancellation requested successfully", booking });
     }

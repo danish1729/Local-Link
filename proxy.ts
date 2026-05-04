@@ -10,7 +10,6 @@ export async function middleware(req: NextRequest) {
   
   // Authentication & Authorization
   const isProtectedPath = 
-    url.pathname.startsWith("/dashboard") ||
     url.pathname.startsWith("/bookings") ||
     url.pathname.startsWith("/profile") ||
     url.pathname.startsWith("/admin-panel");
@@ -41,7 +40,7 @@ export async function middleware(req: NextRequest) {
 
       // If user is logged in and trying to access login/signup, redirect to home
       if (isAuthPage) {
-        return NextResponse.redirect(new URL(role === "admin" ? "/admin-panel" : "/dashboard", req.url));
+        return NextResponse.redirect(new URL(role === "admin" ? "/admin-panel" : "/", req.url));
       }
 
       // --- Role Based Protection ---

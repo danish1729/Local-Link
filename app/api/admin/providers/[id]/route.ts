@@ -27,6 +27,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             return NextResponse.json({ error: "Invalid status" }, { status: 400 });
         }
         updateData.providerStatus = status;
+        if (status === "approved") {
+            updateData.role = "provider";
+        } else {
+            updateData.role = "customer";
+        }
     }
     
     if (typeof isVerified === "boolean") {

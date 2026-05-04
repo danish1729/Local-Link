@@ -10,7 +10,6 @@ import {
   LogOut,
   Server
 } from "lucide-react";
-import Cookies from "js-cookie";
 import { toast } from "react-hot-toast";
 
 const navItems = [
@@ -24,11 +23,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleLogout = () => {
-    Cookies.remove("auth_token");
-    toast.success("Logged out successfully");
-    router.push("/admin-login");
-    router.refresh();
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      toast.success("Logged out successfully");
+      router.push("/admin-login");
+      router.refresh();
+    } catch (error) {
+      toast.error("Logout failed");
+    }
   };
 
   return (

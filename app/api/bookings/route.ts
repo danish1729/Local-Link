@@ -23,7 +23,7 @@ export async function GET() {
     .populate("customerId", "name profileImage address")
     .sort({ createdAt: -1 });
 
-    return NextResponse.json({ bookings });
+    return NextResponse.json({ bookings, currentUserId: authUser._id });
   } catch (error) {
     console.error("Bookings GET Error:", error);
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
