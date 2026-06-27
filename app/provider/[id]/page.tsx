@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getAuthUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import ProviderProfileCard from "@/components/providers/ProviderProfileCard";
