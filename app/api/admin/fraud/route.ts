@@ -6,6 +6,8 @@ import Booking from "@/models/Booking";
 import Message from "@/models/Message";
 import Conversation from "@/models/Conversation";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
   try {
     await connectDB();

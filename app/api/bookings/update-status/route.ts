@@ -21,7 +21,25 @@ export async function PATCH(req: Request) {
       bookingId,
       updateData,
       { new: true }
-    );
+    ).populate("providerId", "name");
+
+    if (booking) {
+      try {
+        const Notification = (await import("@/models/Notification")).default;
+        const { pusherServer } = await import("@/lib/pusher-server");
+        
+        const notification = await Notification.create({
+          userId: booking.customerId,
+          type: "booking",
+          content: `Your booking #${booking.bookingNumber} has been ${status.toLowerCase()} by ${booking.providerId.name}`,
+          actionUrl: `/bookings?id=${booking._id}`
+        });
+
+        await pusherServer.trigger(`private-user-${booking.customerId}`, "new-notification", notification);
+      } catch (err) {
+        console.error("Booking status notification error:", err);
+      }
+    }
 
     return NextResponse.json({
       message: "Booking status updated",

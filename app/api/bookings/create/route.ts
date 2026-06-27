@@ -51,6 +51,26 @@ export async function POST(req: Request) {
       paymentStatus: "Pending",
     });
 
+    // Create notification for the provider
+    try {
+      const Notification = (await import("@/models/Notification")).default;
+      const User = (await import("@/models/User")).default;
+      const customer = await User.findById(customerId);
+      
+      const notification = await Notification.create({
+        userId: providerId,
+        type: "booking",
+        content: `New booking request #${bookingNumber} from ${customer?.name || "a customer"}`,
+        actionUrl: `/dashboard?role=provider&booking=${booking._id}`
+      });
+
+      // Trigger Pusher for live notification
+      const { pusherServer } = await import("@/lib/pusher-server");
+      await pusherServer.trigger(`private-user-${providerId}`, "new-notification", notification);
+    } catch (err) {
+      console.error("Booking notification error:", err);
+    }
+
     // Proactively scan for fraud using AI
     import("@/lib/ai-fraud").then(({ analyzeBookingForFraud }) => {
       analyzeBookingForFraud(booking).catch(console.error);

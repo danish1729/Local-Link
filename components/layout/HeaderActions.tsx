@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import NotificationBell from "./NotificationBell";
+import { pusherClient } from "@/lib/pusher-client";
+import { toast } from "react-hot-toast";
 
 type UserProps = {
   _id?: string;
@@ -55,6 +57,55 @@ export default function HeaderActions({ user }: { user: UserProps }) {
     }
   };
 
+  // --- 3. Chat & Notification State ---
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?._id) return;
+
+    // Fetch initial counts
+    fetch("/api/chat/conversations")
+      .then(res => res.json())
+      .then(data => {
+        setUnreadChatCount(data.totalUnreadCount || 0);
+      });
+
+    // Real-time updates via Pusher
+    if (!pusherClient) {
+      console.log("Pusher client not initialized");
+      return;
+    }
+
+    console.log("Subscribing to channel:", `private-user-${user._id}`);
+    const channel = pusherClient.subscribe(`private-user-${user._id}`);
+    
+    channel.bind("pusher:subscription_error", (error: any) => {
+      console.error("Pusher subscription error:", error);
+    });
+
+    channel.bind("new-message-alert", (data: any) => {
+      console.log("Received new-message-alert:", data);
+      setUnreadChatCount(prev => prev + 1);
+      toast.success("New message received!", {
+        icon: '💬',
+        position: 'bottom-right'
+      });
+    });
+
+    channel.bind("new-notification", (data: any) => {
+      console.log("Received new-notification:", data);
+      toast(data.content || "New notification", {
+        icon: '🔔',
+        position: 'bottom-right'
+      });
+    });
+
+    return () => {
+      pusherClient.unsubscribe(`private-user-${user._id}`);
+      channel.unbind_all();
+    };
+  }, [user?._id]);
+
   // ── 1. Guest view ──
   if (!user || !user._id) {
     return (
@@ -95,8 +146,13 @@ export default function HeaderActions({ user }: { user: UserProps }) {
       )}
 
       {/* ── Messages Icon ── */}
-      <Link href="/messages" className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors hidden md:block">
+      <Link href="/messages" className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors hidden md:block relative">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
+        {unreadChatCount > 0 && (
+          <span className="absolute top-0 right-0 min-w-[18px] h-[18px] px-1 bg-indigo-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+            {unreadChatCount > 9 ? "9+" : unreadChatCount}
+          </span>
+        )}
       </Link>
 
       {/* ── Notification Bell ── */}

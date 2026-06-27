@@ -31,6 +31,13 @@ export default function ChatWindow({ currentUser, conversation, onBack }: ChatWi
         scrollToBottom();
       });
 
+    // Mark as read
+    fetch("/api/chat/conversations/read", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversationId: conversation._id })
+    }).catch(console.error);
+
     // Subscribe to Pusher channel for this conversation
     const channelName = `private-conversation-${conversation._id}`;
     const channel = pusherClient.subscribe(channelName);

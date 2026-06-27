@@ -100,7 +100,7 @@ export default function ChatBot() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end pointer-events-none">
       {/* Pointer events are disabled on the container so clicks pass through to the page behind it, 
           but enabled on the chat window and button */}
 

@@ -21,13 +21,23 @@ export default function NotificationBell({ userId }: { userId: string }) {
       });
 
     // Sub to personal channel for notifications
+    if (!pusherClient) return;
+
+    console.log("NotificationBell: Subscribing to", `private-user-${userId}`);
     const channel = pusherClient.subscribe(`private-user-${userId}`);
+    
+    channel.bind("pusher:subscription_error", (error: any) => {
+      console.error("NotificationBell: Pusher subscription error:", error);
+    });
+
     channel.bind("new-notification", (notification: any) => {
+      console.log("NotificationBell: Received notification:", notification);
       setNotifications(prev => [notification, ...prev]);
     });
 
     return () => {
       pusherClient.unsubscribe(`private-user-${userId}`);
+      channel.unbind_all();
     };
   }, [userId]);
 

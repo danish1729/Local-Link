@@ -98,6 +98,25 @@ export async function POST(req: Request) {
       await pusherServer.trigger(`private-conversation-${message.conversationId}`, "new-message", popSysMsg);
 
       await Conversation.findByIdAndUpdate(message.conversationId, { lastMessage: systemMessage._id });
+
+      // Notify the provider (offer sender)
+      try {
+        const Notification = (await import("@/models/Notification")).default;
+        await Notification.create({
+          userId: providerId,
+          type: "offer",
+          content: `${customer.name} accepted your custom offer! Booking ${booking.bookingNumber} is confirmed.`,
+          actionUrl: `/dashboard?role=provider&booking=${booking._id}`
+        });
+
+        await pusherServer.trigger(`private-user-${providerId}`, "new-notification", {
+          type: "offer",
+          content: `${customer.name} accepted your custom offer!`,
+          actionUrl: `/dashboard?role=provider&booking=${booking._id}`
+        });
+      } catch (err) {
+        console.error("Offer acceptance notification error:", err);
+      }
     }
 
     return NextResponse.json({ success: true, message: populatedMessage });

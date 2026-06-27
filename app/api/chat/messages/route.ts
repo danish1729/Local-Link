@@ -62,12 +62,42 @@ export async function POST(req: Request) {
 
     const populatedMessage = await newMessage.populate("senderId", "name profileImage");
 
-    await Conversation.findByIdAndUpdate(conversationId, {
-      lastMessage: newMessage._id,
-      $inc: { [`unreadCount.${userId}`]: -1 }, // Will fix unread counts later if needed
-    });
+    // Update conversation: set last message and increment unread count for the RECIPIENT
+    const conversation = await Conversation.findById(conversationId);
+    const recipientId = conversation.participants.find((p: any) => p.toString() !== userId.toString());
 
-    // Trigger Pusher
+    if (recipientId) {
+      const recipientIdStr = recipientId.toString();
+      await Conversation.findByIdAndUpdate(conversationId, {
+        lastMessage: newMessage._id,
+        $inc: { [`unreadCount.${recipientIdStr}`]: 1 },
+      });
+
+      // Get updated conversation for total unread count
+      const updatedConvo = await Conversation.findById(conversationId).lean();
+      const recipientUnreadCount = updatedConvo.unreadCount ? updatedConvo.unreadCount[recipientIdStr] : 0;
+
+      // Create notification for the recipient
+      const Notification = (await import("@/models/Notification")).default;
+      const notification = await Notification.create({
+        userId: recipientIdStr,
+        type: "message_alert",
+        content: `New message from ${populatedMessage.senderId.name}: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`,
+        actionUrl: `/messages?conversationId=${conversationId}`
+      });
+
+      // Trigger user-level notification event (for badge)
+      await pusherServer.trigger(`private-user-${recipientIdStr}`, "new-message-alert", {
+        conversationId,
+        unreadCount: recipientUnreadCount, 
+        notification
+      });
+      
+      // Trigger new-notification for the bell
+      await pusherServer.trigger(`private-user-${recipientIdStr}`, "new-notification", notification);
+    }
+
+    // Trigger conversation-level Pusher (for the active chat window)
     await pusherServer.trigger(`private-conversation-${conversationId}`, "new-message", populatedMessage);
 
     // AI Fraud detection for chat messages

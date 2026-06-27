@@ -31,7 +31,15 @@ export async function GET(req: Request) {
       .sort({ updatedAt: -1 })
       .lean();
 
-    return NextResponse.json({ conversations });
+    // Calculate total unread count for this user
+    const totalUnreadCount = conversations.reduce((acc: number, convo: any) => {
+      const count = convo.unreadCount?.[userId] || 0;
+      console.log(`Convo ${convo._id} unread for ${userId}: ${count}`);
+      return acc + count;
+    }, 0);
+
+    console.log(`Total unread for ${userId}: ${totalUnreadCount}`);
+    return NextResponse.json({ conversations, totalUnreadCount });
   } catch (error) {
     console.error("Conversations GET Error:", error);
     return new NextResponse("Internal Error", { status: 500 });

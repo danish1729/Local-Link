@@ -33,7 +33,37 @@ export default async function ProviderProfilePage({ params }: Props) {
     notFound();
   }
 
-  const provider = serializeProvider(rawProvider); //
+  const provider = serializeProvider(rawProvider);
+
+  // Profile visit notification logic
+  const authUser = await getAuthUser();
+  if (authUser && authUser._id.toString() !== id) {
+    try {
+      const Notification = (await import("@/models/Notification")).default;
+      
+      // Optional: Check if we already notified recently to avoid spam
+      const lastNotification = await Notification.findOne({
+        userId: id,
+        type: "system",
+        content: { $regex: new RegExp(`${authUser.name} viewed your profile`) }
+      }).sort({ createdAt: -1 });
+
+      const oneHourAgo = new Date(Date.now() - 3600000);
+      if (!lastNotification || lastNotification.createdAt < oneHourAgo) {
+        const notification = await Notification.create({
+          userId: id,
+          type: "system",
+          content: `${authUser.name} viewed your profile`,
+          actionUrl: `/provider/${id}` // Point to their own profile or stats?
+        });
+
+        const { pusherServer } = await import("@/lib/pusher-server");
+        await pusherServer.trigger(`private-user-${id}`, "new-notification", notification);
+      }
+    } catch (err) {
+      console.error("Profile visit notification error:", err);
+    }
+  }
 
   return (
     <>
