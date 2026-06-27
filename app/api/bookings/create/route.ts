@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { connectDB } from "@/lib/db";
 import Booking from "@/models/Booking";
 import crypto from "crypto";
@@ -71,9 +71,15 @@ export async function POST(req: Request) {
       console.error("Booking notification error:", err);
     }
 
-    // Proactively scan for fraud using AI
-    import("@/lib/ai-fraud").then(({ analyzeBookingForFraud }) => {
-      analyzeBookingForFraud(booking).catch(console.error);
+
+    // Proactively scan for fraud using AI in the background
+    after(async () => {
+      try {
+        const { analyzeBookingForFraud } = await import("@/lib/ai-fraud");
+        await analyzeBookingForFraud(booking);
+      } catch (err) {
+        console.error("AI Fraud Detection Background Task Error:", err);
+      }
     });
 
     return NextResponse.json(

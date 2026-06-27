@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { connectDB } from "@/lib/db";
 import Message from "@/models/Message";
 import Conversation from "@/models/Conversation";
@@ -101,8 +101,13 @@ export async function POST(req: Request) {
     await pusherServer.trigger(`private-conversation-${conversationId}`, "new-message", populatedMessage);
 
     // AI Fraud detection for chat messages
-    import("@/lib/ai-fraud").then(({ analyzeMessageForFraud }) => {
-      analyzeMessageForFraud(newMessage).catch(console.error);
+    after(async () => {
+      try {
+        const { analyzeMessageForFraud } = await import("@/lib/ai-fraud");
+        await analyzeMessageForFraud(newMessage);
+      } catch (err) {
+        console.error("AI Fraud Detection Background Task Error:", err);
+      }
     });
 
     return NextResponse.json(populatedMessage);
